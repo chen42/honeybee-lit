@@ -65,7 +65,7 @@ def read_rows(path: Path) -> list[dict]:
         return [{"id": line.strip()} for line in text.splitlines() if line.strip()]
     data = json.loads(text)
     if isinstance(data, dict):
-        rows = data.get("files") or data.get("records")
+        rows = data.get("files") or data.get("records") or data.get("entries")
         if isinstance(rows, list):
             return rows
         return [dict(value, id=key) if isinstance(value, dict) else {"id": key} for key, value in data.items()]

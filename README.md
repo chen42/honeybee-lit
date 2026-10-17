@@ -14,8 +14,10 @@ A forager visits many flowers and reports each source's location precisely enoug
 
 - **Protocol first.** The question, eligibility criteria, and search plan are confirmed before retrieval.
 - **Rerunnable searches.** Exact search strings, databases, dates, and counts are saved. PubMed/Europe PMC and GWAS Catalog lanes run through `scripts/run_lanes.py` with a JSON run summary.
+- **Size gate before screening.** After the search lanes run, the agent reports unique records, lane overlap, and screening workload, then asks whether to process all records or a defined subset. Unselected records stay outside the approved cap, never silently excluded.
 - **Preserved sources.** Retrieved records are kept with a SHA-256 manifest, so the corpus can be verified later.
 - **Append-only screening ledger.** Every decision is a row with a fixed schema (`record_id`, `stage`, `decision`, `reviewer_id`, `timestamp`, and `primary_reason_id` for exclusions). Records without a decision stay pending; a ranked queue is never a screened set.
+- **Full-text access plan.** `scripts/fetch_fulltext.py` checks access before downloading, fetches only approved records through PMC efetch, Europe PMC, and PMC BioC (reusing `wasp-lit`'s routes read-only), keeps raw responses with hashes, and lists papers that need institutional access or a user-supplied PDF.
 - **Standard templates.** Protocol, search record, source manifest, screening, extraction, appraisal, claim-evidence map, verification, and checkpoint use the same templates in every review.
 - **Automated integrity checks.** `scripts/validate_corpus.py` checks manifest hashes, citations outside the corpus, ledger schema and counts, and excluded records cited as evidence.
 - **Reopenable evidence.** Enough context is saved to reopen the original sources for any claim in a later conversation. Checks are recorded literally as passed, failed, blocked, or not run.
@@ -24,11 +26,13 @@ A forager visits many flowers and reports each source's location precisely enoug
 
 1. Confirm the question and protocol.
 2. Design, run, and document searches; preserve retrieved sources.
-3. Report corpus problems before screening.
-4. Screen complete abstracts in bounded batches; extract and appraise evidence.
-5. Report evidence findings before full synthesis.
-6. Synthesize, validate the workspace, and verify claim support.
-7. Save context for later reopening.
+3. Report the corpus size and ask whether to process all records or a subset.
+4. Report corpus problems before screening.
+5. Screen complete abstracts in bounded batches.
+6. Check full-text access, ask what to fetch, and list papers that need the user's access; extract and appraise evidence.
+7. Report evidence findings before full synthesis.
+8. Synthesize, validate the workspace, and verify claim support.
+9. Save context for later reopening.
 
 A focused citation check uses only the relevant steps. Narrative, scoping, and systematic reviews keep their methodological differences. Model assistance is never reported as independent human review. Statistical pooling requires a separate `beaver-data` task.
 
@@ -46,11 +50,12 @@ honeybee-lit/
 ├── scripts/
 │   ├── check_skill.py    # Package structure and link checker
 │   ├── validate_corpus.py# Read-only workspace validator
-│   └── run_lanes.py      # Parallel search-lane runner
+│   ├── run_lanes.py      # Parallel search lanes and corpus-size estimate
+│   └── fetch_fulltext.py # Full-text access plan, retrieval, and registration
 └── tests/                # Unit tests and procedural acceptance scenarios
 ```
 
-All scripts use only the Python standard library.
+All scripts except `fetch_fulltext.py` use only the Python standard library. `fetch_fulltext.py` runs with `uv run`, which installs the PubMed tool's HTTP client, and needs the installed `wasp-lit` and `pubmed_database` skills.
 
 ## Project workspace
 

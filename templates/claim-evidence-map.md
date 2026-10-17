@@ -2,7 +2,7 @@
 
 Template only. Repeat per central or contested claim.
 
-- Claim ID and review/protocol/run:
+- Claim number (Claim 1, Claim 2, ...) and review/protocol/run:
 - Exact wording:
 - Type: empirical / interpretive / proposed
 - Population/model, exposure/comparator, outcome, timing, and scientific scope:

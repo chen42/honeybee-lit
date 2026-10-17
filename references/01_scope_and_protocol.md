@@ -31,7 +31,7 @@ Use [the decision record](../templates/decision-record.md). Record a recommendat
 Use [the protocol template](../templates/protocol.md). Before the main search for a full review, confirm:
 
 - The question, scope, eligibility criteria, and exclusion-reason hierarchy.
-- Search sources, supplementary discovery, restrictions, query-calibration plan, and stopping rules.
+- Search sources, supplementary discovery, restrictions, query-calibration plan, and stopping rules. The selection of all records or a subset is settled at the corpus-size gate in [Module 02](02_search_and_retrieval.md), once the actual size is known.
 - Deduplication and study/report linkage rules.
 - Screening stages, treatment of uncertain cases, reviewer roles, and adjudication.
 - Extraction fields, pilot procedure, source-conflict rules, and appraisal methods.

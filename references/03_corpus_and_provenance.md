@@ -40,6 +40,21 @@ Use Markdown for human-readable records. JSONL or an approved structured store c
 
 Assign local identifiers when external identifiers are absent. Do not invent PMIDs or DOIs. A report can describe several studies and a study can have several reports. Record suspected sample overlap separately from confirmed study identity. The abstract and full text of one report are not separate studies.
 
+## Readable identifiers
+
+Number review items by type and spell the type out wherever a person reads them. Never use bare abbreviations such as `D01`, `CL1`, `C4`, or `L1` in reports, syntheses, or messages to the user.
+
+| Item | In reports and messages | In file names, ledgers, and TSV columns |
+|---|---|---|
+| Search lane | Lane 1 (core self-administration) | `lane-1` |
+| Screening or eligibility criterion | Criterion 4 (behavioural outcome) | `criterion-4` |
+| Decision or amendment | Decision 2 (screening criteria) | `decision-02`, file `events/decision-02_screening-criteria.md` |
+| Claim in a synthesis | Claim 3 (place preference correlates) | `claim-3` |
+| Screening batch | Batch 2 | `batch-2` |
+| Run | Run 1 | `run-01` |
+
+Every time an item is mentioned in a report or message, follow its number with a brief keyword in parentheses that reminds the reader what it is, for example "Decision 1 (corpus size)", "Criterion 4 (behavioural outcome)", "Lane 2 (nicotine-seeking)", or "Claim 4 (VTA BDNF, place conditioning)". Keep the keyword to a few words and use the same keyword for an item throughout a review. When the mention already sits inside parentheses, use a colon instead of nesting, for example "(PMID 28857504; Claim 2: promoter marks)". Record each item's keyword where it is defined: the `label` column of the lanes TSV, the criterion table, the decision record title, and the claim heading. Keep numbering sequential within a review and never reuse a number; a superseded decision keeps its number and is referenced by the decision that replaces it. Machine forms stay lowercase with hyphens so they sort and parse cleanly. External identifiers (PMID, DOI, PMCID) are unchanged.
+
 For events, record an event identifier, review/protocol/run, affected report or study, source identifier and hash, timestamp with time zone, responsible person or process, rubric version, result, rationale, and any superseded event. Preserve original judgments alongside reconciled ones. Derived summaries may be rebuilt; original evidence events must remain recoverable.
 
 ## Source manifest

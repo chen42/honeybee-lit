@@ -126,6 +126,16 @@ class CorpusChecks(unittest.TestCase):
         errors, _, _ = self.run_checks("--screening", ledger)
         self.assertEqual(errors, [])
 
+    def test_entries_wrapper_is_read_as_records(self):
+        self.corpus = self.write("sources/fulltext_plan.json", json.dumps(
+            {"created": "t", "counts": {}, "entries": [{"pmid": "11553778"}, {"pmid": "35229935"}]}))
+        ledger = self.write("records/screening.tsv", LEDGER_HEADER
+                            + "11553778\ttitle_abstract\tadvance\t\t\tcoordinator\tt1\n")
+        errors, _, notes = self.run_checks("--screening", ledger)
+        self.assertEqual(errors, [])
+        self.assertTrue(any("2 registered records" in item for item in notes))
+        self.assertTrue(any("pending, not excluded): 1" in item for item in notes))
+
     def test_cli_exit_codes(self):
         bad = self.write("notes/synthesis.md", "PMID 22419037\n")
         result = subprocess.run([sys.executable, str(SCRIPT), "--corpus", str(self.corpus), "--check", str(bad)],

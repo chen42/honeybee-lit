@@ -84,12 +84,52 @@ class LaneRunner(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertLess(time.monotonic() - start, 4.0)
 
+    def test_size_estimate_counts_union_overlap_and_caps(self):
+        overlap = self.root / "overlap.py"
+        overlap.write_text(
+            "import json,sys\nids={'a':['1','2','3'],'b':['3','4'],'c':['4']}[sys.argv[2]]\n"
+            "json.dump([{'pmid':i} for i in ids] if sys.argv[2]=='b' else ids, open(sys.argv[1],'w'))\n")
+        self.tool = overlap
+        result, _, summary = self.run_lanes(["a", "b", "c"], "--cap", "3", "--batch-size", "2")
+        size = summary["size_estimate"]
+        self.assertEqual(size["unique_ids"], 4)
+        self.assertEqual(size["returned_total"], 6)
+        self.assertEqual(size["unique_to_lane"], {"L1": 2, "L2": 0, "L3": 0})
+        self.assertEqual(size["lanes_possibly_capped"], ["L1"])
+        self.assertTrue(size["lower_bound"])
+        self.assertEqual(size["screening_batches"], 2)
+        membership = json.loads((self.root / "searches" / "membership.json").read_text())
+        self.assertEqual(membership["3"], ["L1", "L2"])
+        self.assertEqual(len(json.loads((self.root / "searches" / "union_ids.json").read_text())), 4)
+        self.assertIn("at least 4 unique records", result.stdout)
+        self.assertIn("decision needed", result.stdout)
+
+    def test_failed_lane_makes_size_a_lower_bound(self):
+        _, _, summary = self.run_lanes(["fail", "b"])
+        self.assertEqual(summary["size_estimate"]["unique_ids"], 3)
+        self.assertEqual(summary["size_estimate"]["lanes_not_ok"], ["L1"])
+        self.assertTrue(summary["size_estimate"]["lower_bound"])
+
+    def test_labels_shown_beside_lane_ids(self):
+        lanes = self.root / "labelled.tsv"
+        lanes.write_text("lane\tlabel\tquery\nlane-1\tcore self-administration\ta\n", encoding="utf-8")
+        command = f"{PY} {shlex.quote(str(self.tool))} {{out}} {{query}}"
+        result = subprocess.run([sys.executable, str(SCRIPT), str(lanes), "--command", command, "--out-dir", str(self.root / "s")],
+                                capture_output=True, text=True, check=False, timeout=60)
+        self.assertIn("lane-1 (core self-administration) 3 returned", result.stdout)
+        self.assertIn("lane-1 (core self-administration) 3", result.stdout.split("unique to one lane:")[1])
+
     def test_failed_preflight_launches_nothing(self):
         result, lanes, summary = self.run_lanes(["a", "b"], "--preflight", f"{PY} -c 'import sys; sys.exit(3)'")
         self.assertEqual(result.returncode, 2)
         self.assertEqual(summary["preflight"]["status"], "failed")
         self.assertEqual({lane["status"] for lane in lanes.values()}, {"not run"})
         self.assertFalse((self.root / "searches" / "L1_results.json").exists())
+
+    def test_rate_limited_preflight_says_so(self):
+        result, _, _ = self.run_lanes(["a"], "--preflight", f"{PY} -c 'import sys; print(\"curl: (22) The requested URL returned error: 429\"); sys.exit(22)'")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("rate-limiting requests (HTTP 429)", result.stdout)
 
     def test_hung_preflight_times_out(self):
         start = time.monotonic()

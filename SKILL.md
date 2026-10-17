@@ -34,6 +34,7 @@ This draft provides instructions and templates, not a retrieval application or v
 - Keep discovery, enumeration, retrieval, abstract availability, screening, full-text access, extraction, and appraisal as separate coverage dimensions. Failed requests are not zero hits; missing sources are not scientific exclusions.
 - Distinguish discovery records, bibliographic reports, studies, and source versions. Multiple queries, papers from one study, and an abstract plus its full text are not independent replication.
 - Apply approved eligibility criteria consistently. Keep uncertain, null, and conflicting findings. Keyword matches and machine rankings may prioritize work but must not silently become exclusion rules or a screened set. Record decisions in an append-only ledger, in bounded batches of complete abstracts; unread records stay pending.
+- Use readable identifiers: write Lane 1, Criterion 4, Decision 2, and Claim 3 in reports and messages, each followed by a brief reminder keyword in parentheses at every mention, such as Decision 2 (screening criteria), and `lane-1`, `criterion-4`, `decision-02`, `claim-3` in files and ledgers; never bare abbreviations such as D01 or CL1. See [Module 03](references/03_corpus_and_provenance.md), Readable identifiers.
 - Tie findings to the inspected source version and an exact passage or table/figure location. Preserve quotations verbatim. A matching quotation establishes fidelity, not scientific support.
 - Present a corpus-forensics report before substantive screening, then an evidence-findings report before full synthesis. For focused tasks, perform and report the relevant checks briefly rather than creating separate reports.
 - Match interpretation to design, measured outcomes, model, and controls. Distinguish observation, association, perturbation, prediction, mechanism, and inference. Do not rank evidence by publication counts or vote-count statistical significance.
@@ -48,8 +49,10 @@ This draft provides instructions and templates, not a retrieval application or v
 |---|---|---|
 | Scope | Confirm question, review type, criteria, authority, and outputs. | Material requirements are settled; a full review has a confirmed protocol. |
 | Search | Calibrate queries, save exact strategies, retrieve sources, and record coverage. | Main-search methods are approved; failures and limits are visible. |
+| Size gate | Report unique records, lane overlap, lower-bound caveats, and screening workload; ask whether to process all records or a defined subset. | The user chose all or a recorded subset rule, or had already specified the scope. |
 | Corpus forensics | Report duplicates, missing sources, identity conflicts, and retrieval defects. | Material repairs or an explicitly bounded continuation are agreed. |
 | Screening | Apply the frozen criteria; record decisions and unresolved cases. | The applicable selection stage is settled or remaining work is explicitly incomplete. |
+| Full-text plan | Check access for records needing full text (no downloads), report counts and the needs-user list, and ask which to fetch. | The user chose the categories or PMIDs to fetch and was given the needs-user list. |
 | Extraction and appraisal | Pilot forms; preserve source-linked findings and design-appropriate judgments. | Evidence needed for the proposed synthesis is available, with missing work identified. |
 | Evidence findings | Present the evidence matrix, conflicts, null findings, appraisal concerns, and answerable scope. | The synthesis scope is confirmed for full reviews; empirical findings are not subject to user preference. |
 | Synthesis and verification | Write by scientific question, audit claims, and reconcile the review flow. | The requested checks are done or outstanding checks are explicitly reported. |
@@ -64,7 +67,7 @@ Resolve bundled paths relative to this skill directory. Load only the relevant m
 | Task | Reference |
 |---|---|
 | Requirements, task modes, protocols, permissions | [01: Scope and protocol](references/01_scope_and_protocol.md) |
-| Search strategy, pilots, retrieval tools, full-text access | [02: Search and retrieval](references/02_search_and_retrieval.md) |
+| Search strategy, parallel lanes, corpus-size gate, retrieval tools, full-text plan and retrieval | [02: Search and retrieval](references/02_search_and_retrieval.md) |
 | Source capture, records, deduplication, coverage, forensics | [03: Corpus and provenance](references/03_corpus_and_provenance.md) |
 | Eligibility, decision ledger, adjudication, optional authorized workers | [04: Screening](references/04_screening.md) |
 | Extraction, study relationships, appraisal | [05: Extraction and appraisal](references/05_extraction_and_appraisal.md) |
@@ -78,7 +81,7 @@ Use the linked templates in each module. Leave fields explicitly unresolved rath
 ## Companion boundaries
 
 - Use an installed retrieval skill or an authoritative interface for live access. Confirm availability and read its instructions; do not assume optional connectors are installed.
-- Keep `wasp-lit` as the specialized gene-to-phenotype workflow. Reuse its saved corpus read-only through an explicit mapping. Its concept caps and full-text quotas do not establish systematic coverage.
+- Keep `wasp-lit` as the specialized gene-to-phenotype workflow. `scripts/fetch_fulltext.py` reuses its full-text routes read-only and never writes to it. Reuse its saved corpus read-only through an explicit mapping. Its concept caps and full-text quotas do not establish systematic coverage.
 - Hand approved effect-size derivation, quantitative synthesis, meta-analysis, and statistical diagnostics to `beaver-data`, with a separate analysis plan. Copy reported estimates faithfully; do not reconstruct missing results during prose synthesis.
 - Use `weaver-text` for requested manuscript or grant integration, editing, review, and submission production; for those deliverables, read its scientific-prose module before drafting or revising. Do not convert formats or alter an existing document just to deliver a literature answer.
 

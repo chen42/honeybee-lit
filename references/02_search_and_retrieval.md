@@ -28,7 +28,7 @@ Independent query lanes (separate strategies, concepts, or databases) can run co
 3. **Bound concurrency by the provider's limits.** Run lanes in parallel only when the retrieval tool enforces a rate limit shared across processes; the installed `polite_http` client used by the PubMed adapter does, through a per-host lock file. Otherwise run lanes one at a time. Three concurrent lanes is a sensible default; NCBI allows 10 requests per second with an API key and 3 without.
 4. **Report as lanes finish** and keep credentials out of logs and status lines.
 
-`scripts/run_lanes.py` does all four. Lanes come from a TSV with `lane` and `query` columns, which also serves as the record of exact query strings:
+`scripts/run_lanes.py` does all four. Lanes come from a TSV with `lane` and `query` columns (lane identifiers `lane-1`, `lane-2`, and so on; an optional `label` column gives each lane's short keyword, which status lines print beside the identifier, and an optional `purpose` column describes it), which also serves as the record of exact query strings:
 
 ```bash
 python3 <skill-dir>/scripts/run_lanes.py searches/lanes.tsv \
@@ -61,6 +61,26 @@ Preserve all discovered identifiers even when a bounded task retrieves only a su
 No default newest-first cap or fixed full-text quota applies. A bounded narrative task can use approved limits, but the limits must appear in the coverage statement. A formal review with outstanding records cannot be called fully screened. If a large query remains unreconciled, preserve the partial results and report its status as partial or blocked.
 
 Run large retrievals as batched calls with a status line between them and incremental saves, as described in [Module 07](07_verification_and_delivery.md), Progress reporting. Retries must respect the provider's terms and rate limits, with bounded attempts and recorded outcomes. Stop and report persistent failures. Do not turn an HTTP error, timed-out request, or incomplete export into a zero-result search.
+
+## Corpus-size gate
+
+After the initial search lanes finish and before retrieving abstracts or screening, estimate the corpus size and ask the user whether to process all records or a defined subset. Do this for every review and for focused tasks, unless the user has already specified the scope (for example, "screen everything" or "only the last five years"). Do not proceed past the gate on your own.
+
+Base the estimate on saved results, not memory. `scripts/run_lanes.py` prints and saves it in `lanes_summary.json` (`size_estimate`), with `union_ids.json` and `membership.json`. Report:
+
+- Unique records after deduplicating identifiers across lanes, and the number returned before deduplication.
+- Records found by only one lane, which shows what each lane adds.
+- Whether the estimate is a lower bound: lanes that failed, timed out, or returned exactly their result cap (pass `--cap`). Where the database's reported total is available, give it as well.
+- The expected screening workload in batches of 20 to 30 abstracts, and whether full-text work is planned.
+
+Then ask one question with bounded options, a recommendation, and its rationale. Typical options:
+
+1. **All records.** State the number of batches. Recommend when the corpus fits the requested review type and the session or a planned series of sessions.
+2. **A subset by lane or concept.** For example, the core lanes only, with their unique count. Name what the excluded lanes would have added.
+3. **A subset by metadata rule**, such as date range, publication type, or species, with the count when computable. If the rule needs metadata not yet retrieved, say so; fetching summaries for all records is inexpensive and can precede the decision.
+4. **A pilot batch first**, such as 25 records chosen by a stated rule, then decide with the observed eligibility rate.
+
+Record the answer with [the decision record](../templates/decision-record.md): the selection rule, its basis, the counts selected and not selected, and the confirmation. A subset rule is a retrieval bound, not an eligibility criterion. Unselected records keep their identifiers and lane membership with the coverage state "outside approved cap"; they are not excluded, and the coverage statement and any review label must reflect the bound. Do not choose a subset rule after reading outcomes, and do not use relevance ranking as a subset rule without saying so.
 
 ## Biomedical lanes and gray literature
 
@@ -98,5 +118,26 @@ After title/abstract screening where applicable, seek full text for reports requ
 Use legitimate open access, institutional access already available, or user-supplied documents. Verify document identity with authoritative identifiers and metadata. A repository link is not proof of successful retrieval or permission to redistribute.
 
 Distinguish retrieved, not found through the attempted routes, access denied, transient failure, identity conflict, and not attempted. Do not call a paper paywalled merely because one endpoint failed. A confirmed unavailability outcome describes the checked routes, not universal impossibility of access.
+
+### Plan, ask, then fetch
+
+Use `scripts/fetch_fulltext.py` (run with `uv run`) in three steps from the review workspace:
+
+1. **Plan.** `uv run <skill-dir>/scripts/fetch_fulltext.py plan <pmids.json>` checks access without downloading anything: PMC identifiers from PubMed links and Europe PMC metadata, Europe PMC's open-access flag, and an OpenAlex open-access lookup for records not in PMC. It sorts records into `pmc_open_access`, `pmc_restricted`, `pmc_access_unknown`, `open_elsewhere`, `closed`, and `lookup_failed`, writes `fulltext_plan.json`, and lists records that need the user in `needs_user.tsv`.
+2. **Ask.** Report the counts, how many are retrievable by script, and the needs-user list, then ask which categories or PMIDs to fetch. Include `pmc_restricted` by default: the category means no open-access license, not no text. PMC `efetch` often still serves the body (for example NIH author manuscripts); in testing it did for 9 of 12 restricted records in one review and 0 of 3 in another. Trying them is quick and either retrieves the text or confirms absence. Rerun the plan before deciding if any lookups failed.
+3. **Fetch.** `... fetch --categories pmc_open_access,pmc_restricted` (or `--pmid` for specific records) tries the routes in order: PMC `efetch` (JATS), Europe PMC `fullTextXML` (JATS), then PMC BioC. It saves the raw response and the parsed passages with SHA-256 hashes, records every attempt in `attempts/`, and writes `fulltext_index.json`. Already retrieved records are kept unchanged unless `--refetch` is given, which keeps the earlier record.
+
+The routes, identity checks, and short retry settings (30 s timeout, at most two retries per route) are reused read-only from `wasp-lit`'s `scripts/pubmed_extension.py`. The script finds that module under `~/.agents/skills` and does not modify it; pass `--wasp` if it lives elsewhere. Without `wasp-lit`, report full-text retrieval as blocked rather than substituting an unchecked route.
+
+Outcomes are `retrieved`, `unavailable` (at least one route confirmed absence), and `failed` (every route errored; rerun those PMIDs later). Observed provider behavior to account for:
+
+- Europe PMC returns HTTP 500, not 404, for `fullTextXML` of articles that are in PMC but not open access. When its metadata says `isOpenAccess=N`, the script records that 500 as absence from that route.
+- When PMC `efetch` returns metadata without a body, that is a confirmed absence from that route, not an error. A text served this way without an open-access license is for local use only; its license field records the restriction.
+- The PMC BioC service serves only the PMC open-access subset. It rate-limits rapid requests (HTTP 429 with `Retry-After` of about a minute) and has had outages, and the HTTP client shares that back-off across all NCBI hosts, so one 429 stalls every other NCBI request. The script therefore skips BioC for articles Europe PMC marks `isOpenAccess=N`; this cut three restricted articles from about 210 s to 9 s in testing. BioC's `[Error] : No result can be found` reply is recorded as absence. Otherwise treat a BioC 429 or 5xx as a failed attempt, not as unavailability.
+- Publisher sites often refuse scripted downloads (HTTP 403) even for open-access articles. Do not work around this; list the record for the user.
+
+### Full texts that need the user
+
+`needs_user.tsv` lists each record that no permitted route could retrieve, with its DOI, category, open-access status, and any open-access or landing URL. Give the user that list and ask whether they can retrieve the papers through institutional access or supply PDFs. Register each supplied file with `... register --pmid <PMID> --file <path> --origin "<how it was obtained>"`. Registration copies the file unchanged into the full-text folder, hashes it, records its origin and license status, removes it from the needs-user list, and marks its identity check as pending. Confirm the title, authors, and DOI against the PubMed record before extracting from it, and record the result. A user-supplied copy is for the user's local use; do not redistribute it.
 
 Retain original PDFs or structured full texts where available and permitted. Label readable extracts as extracts. Record whether figures, tables, supplementary files, and corrections were actually retrieved and inspected. Missing full text leaves eligibility or detailed claims unresolved when they depend on it.

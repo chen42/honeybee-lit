@@ -16,9 +16,9 @@ Template only. Empty fields are unresolved, not evidence or approval.
 
 ## Eligibility
 
-| Criterion ID | Dimension | Eligible | Ineligible | Uncertain handling |
+| Criterion | Dimension | Eligible | Ineligible | Uncertain handling |
 |---|---|---|---|---|
-| [ID] | [population/model, exposure, outcome, design, context, or source type] | | | |
+| Criterion 1 (`criterion-1`) | [population/model, exposure, outcome, design, context, or source type] | | | |
 
 - Species and biological-entity identity rules:
 - Publication types, preprints, dates, and languages:
@@ -35,6 +35,7 @@ Template only. Empty fields are unresolved, not evidence or approval.
 - Information-specialist or search peer-review arrangement:
 - Retrieval tools and access already available:
 - Limits, caps, sorting, sampling, and stopping rules:
+- Corpus-size gate: estimated size, choice of all records or subset rule, and confirmation:
 - Full-text access and unresolved-access handling:
 - Raw responses, complete abstracts, and source-storage plan:
 

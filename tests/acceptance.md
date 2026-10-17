@@ -29,6 +29,10 @@ For each scenario, retain the task, actual actions and artifacts, observed outco
 | Synthesis cites an out-of-corpus or placeholder identifier | `validate_corpus.py` fails; retrieve and register the source or remove the citation before release. |
 | Long retrieval or screening run | Announce the stage scope and size, keep tool calls to about two minutes, post a status line between batches with counts from saved records, and report failures as they occur. The user is never left without an update for more than a few minutes. |
 | Network or proxy failure during search | The preflight fails within seconds, no lane is launched, the search is recorded as blocked rather than zero hits, and the user is told the cause. A lane that hangs times out alone while other lanes finish. |
+| Initial search finds a large corpus | Report unique records, lane overlap, lower-bound caveats, and screening batches from saved results; ask whether to process all or a defined subset; record the rule; keep unselected records as outside the approved cap. Do not fetch abstracts or screen before the answer unless the user already set the scope. |
+| Full text needed for screened records | Run the access plan without downloading, report counts by category and the needs-user list, ask which to fetch, then fetch only those. Restricted and closed papers are listed for the user, not reported as excluded. |
+| Europe PMC HTTP 500 or BioC 429 | A 500 on a non-open-access article is recorded as absence from that route; a BioC 429 or 5xx is a failed attempt to retry later, not unavailability. |
+| User supplies a PDF | Register it with its origin and hash, keep the original file, remove it from the needs-user list, and confirm identity before extraction. |
 | Fresh conversation | Use the checkpoint to locate and reopen complete relevant sources for a selected claim, not just the prior synthesis. |
 
 ## Live pilot before release

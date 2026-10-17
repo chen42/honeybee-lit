@@ -2,7 +2,7 @@
 
 Template only. A recommendation is not an author decision.
 
-- Decision/event ID:
+- Decision number and topic (for example, Decision 2: screening criteria; file events/decision-02_screening-criteria.md):
 - Review, protocol, and run:
 - Date with time zone:
 - Issue and scientific consequence:
