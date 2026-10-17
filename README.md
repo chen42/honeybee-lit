@@ -93,9 +93,14 @@ git clone https://github.com/chen42/honeybee-lit.git ~/.pi/agent/skills/honeybee
 git clone https://github.com/chen42/honeybee-lit.git ~/.claude/skills/honeybee-lit
 ```
 
-In Pi, run `/reload` after cloning. Live retrieval needs a PubMed/Europe PMC tool and network access. Offline package checks:
+In Pi, run `/reload` after cloning, or list the path under `"skills"` in `~/.pi/agent/settings.json`.
+
+Requirements: Live retrieval needs a PubMed/Europe PMC tool and network access. Offline checks need only Python 3.
+
+Verify the installation from the skill directory:
 
 ```bash
+cd ~/.claude/skills/honeybee-lit  # or your install path
 python3 scripts/check_skill.py
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
