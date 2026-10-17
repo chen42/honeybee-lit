@@ -32,7 +32,7 @@ A new outcome, population, eligibility rule, database, search cap, exclusion str
 - Affected searches, reports, screening decisions, extractions, appraisals, and claims.
 - Rework needed and which previous outputs are superseded or still usable.
 
-Keep old protocol and evidence versions. Mark exploratory additions honestly; do not rewrite them as prospective decisions. A substantial new question may need its own linked review context rather than an increasingly ambiguous corpus.
+Keep old protocol and evidence versions. Mark exploratory additions accurately; do not rewrite them as prospective decisions. A substantial new question may need its own linked review context rather than an increasingly ambiguous corpus.
 
 ## Update searches
 

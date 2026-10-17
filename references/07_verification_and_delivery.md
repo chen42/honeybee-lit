@@ -78,7 +78,7 @@ The user sees text only between tool calls. A single long command, such as one s
 - **Post a status line between calls.** Use a fixed form: `[stage] done/total units; failures; elapsed; next step`, for example `[screening] 60/154 abstracts, ledger rows appended; 0 failures; 9 min; next batch 61-90`. Report failures and retries as they occur, not only at the end.
 - **Run independent lanes in parallel.** Use `scripts/run_lanes.py` with a preflight check and per-lane timeouts ([Module 02](02_search_and_retrieval.md), Run lanes in parallel, fail fast) instead of a sequential loop inside one long command.
 - **Make scripts report and persist.** Retrieval and processing scripts print one line per batch with counts and errors (flush output immediately), and write each completed batch to disk before starting the next. An interrupted run then loses at most one batch and its progress can be reconstructed from saved files.
-- **Report stops honestly.** When pausing at a batch boundary, give the completed count, the pending count, where the checkpoint is saved, and the next permitted action.
+- **Report stops accurately.** When pausing at a batch boundary, give the completed count, the pending count, where the checkpoint is saved, and the next permitted action.
 
 A status line is navigation, not a completion claim. Counts in status lines come from saved records, using the same units as the coverage dimensions in [Module 03](03_corpus_and_provenance.md).
 
