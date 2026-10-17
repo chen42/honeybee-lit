@@ -26,6 +26,7 @@ For each scenario, retain the task, actual actions and artifacts, observed outco
 | No delegation authority | Do not launch workers merely because a task is large or a companion skill supports them. |
 | Review-only request | Preserve the manuscript and bibliography. Candidate citations and suggested changes remain separate. |
 | Corpus too large to read in one session | Screen complete abstracts in bounded batches, append ledger rows per batch, and checkpoint the remainder as pending. Do not substitute a keyword-selected queue for screening. |
+| Screening ledger written in the wrong schema | Validation after the first batch catches it. Convert the single ledger in place without changing decisions, and log the original hash and the field mapping. Do not create a `_v2` or a parallel ledger. |
 | Synthesis cites an out-of-corpus or placeholder identifier | `validate_corpus.py` fails; retrieve and register the source or remove the citation before release. |
 | Long retrieval or screening run | Announce the stage scope and size, keep tool calls to about two minutes, post a status line between batches with counts from saved records, and report failures as they occur. The user is never left without an update for more than a few minutes. |
 | Network or proxy failure during search | The preflight fails within seconds, no lane is launched, the search is recorded as blocked rather than zero hits, and the user is told the cause. A lane that hangs times out alone while other lanes finish. |

@@ -34,6 +34,14 @@ Separate scientific eligibility from whether a report is useful for background, 
 
 Record every title/abstract and full-text decision as one appended row in `records/screening.tsv` (or `screening.jsonl`). Required fields: `record_id`, `stage` (`title_abstract`, `full_text`, or `abstract_bounded`), `decision` (`advance`, `include`, `exclude`, `uncertain`), `reviewer_id`, and `timestamp`. Also record `primary_reason_id` for every exclusion, using the criterion's machine form such as `criterion-4`, and a `passage_locator` where practical; add `source_id`, `source_hash`, `rubric_version`, and `note` columns as needed. Never edit or delete earlier rows; a later row for the same record and stage supersedes the earlier one.
 
+Keep exactly one ledger per review; do not create `_v2` or renamed copies. A JSONL row looks like this:
+
+```json
+{"record_id": "25219790", "stage": "title_abstract", "decision": "include", "primary_reason_id": "criterion-1", "lanes": ["lane-2"], "note": "Adolescent social defeat; increased adult ethanol intake", "reviewer_id": "claude-inline", "timestamp": "2026-10-17T21:10:00Z"}
+```
+
+`decision` holds the screening outcome, never a row counter or a user-decision number. `pending` is not a decision value: an unread record has no row. Run `scripts/validate_corpus.py --screening` after the first batch so a schema error is caught while the ledger is small. The append-only rule protects decisions, not file format. If the ledger's format itself is wrong, convert the file in place without changing any decision. Record the date, the original file's hash, and the field and value mapping in the run log. A decision that changes during conversion gets its own appended row.
+
 Screen in bounded batches of about 20 to 30 complete abstracts, appending each batch's rows and posting a status line (records done/total, decisions so far, next batch) before reading the next. When a corpus is too large to read in the available session, stop at a batch boundary, record the remaining records as pending in the checkpoint, and continue later or ask for a scope decision. Do not substitute ranking, keyword matching, or snippets for the remaining decisions.
 
 Generate screening counts from the ledger, for example with `scripts/validate_corpus.py --screening`, never from memory or prose. A record with no row is pending, not excluded. Use [the screening template](../templates/screening-record.md) for adjudicated, contested, or full-text decisions that need a longer rationale, and reference it from the ledger row.
