@@ -19,6 +19,10 @@ Keep discovery sources distinct from retrieval routes. Fetching the full text of
 
 Do not discover only supporting studies. Use searches and supplementary methods that can capture null and contrary findings. Report date, language, publication-type, species, and other restrictions with their rationale. Do not add an open-access filter simply because full-text access is limited.
 
+## Initial probe summary
+
+After the initial probe searches, briefly tell the user how many potentially relevant hits were found in each lane, using the saved search results. Based on a quick inspection, say whether the hits address the question and whether any obvious gap calls for adjusting the search. Search matches are not screened inclusions. Give this summary even when the search scope is already approved. A short message is enough; no detailed table or additional approval step is required.
+
 ## Run lanes in parallel, fail fast
 
 Independent query lanes (separate strategies, concepts, or databases) can run concurrently. Dependent steps cannot: fetch abstracts for the union of identifiers only after the lanes that produce it have finished.
